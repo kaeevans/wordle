@@ -1,0 +1,8 @@
+.Keyboard {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  grid-gap: 5px;
+  justify-content: center;
+  margin: 10px;
+}
