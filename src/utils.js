@@ -79,6 +79,7 @@ export function generateBoard(guesses, secretWord, currentGuess) {
   return board;
 }
 
+// TODO: fix bug: If the secret word is HEATH, and you guess HHAAA (or some other word with 2 H's where one is in the wrong location), the second H should be marked as "present", but it is being marked as absent.
 export function compareGuessToSecretWord(guess, secretWord) {
   const out = Array(WORD_LENGTH);
   const correctOccurances = {};
@@ -114,6 +115,37 @@ export function compareGuessToSecretWord(guess, secretWord) {
     }
   }
   return out;
+}
+
+export function isHardModeWord(guesses, currentGuess, secretWord) {
+  if (guesses.length !== 0) {
+    const lastGuess = guesses[guesses.length - 1];
+    const comparison = compareGuessToSecretWord(lastGuess, secretWord);
+    let presentOrCorrectLetters = {};
+    for (let i = 0; i < comparison.length; i++) {
+      const c = comparison[i];
+      if (c === "correct" && currentGuess[i] !== lastGuess[i]) {
+        return false;
+      }
+      if (c === "present" || c === "correct") {
+        if (!(lastGuess[i] in presentOrCorrectLetters)) {
+          presentOrCorrectLetters[lastGuess[i]] = 0;
+        }
+        presentOrCorrectLetters[lastGuess[i]] += 1;
+      }
+    }
+    for (let i = 0; i < currentGuess.length; i++) {
+      if (currentGuess[i] in presentOrCorrectLetters) {
+        presentOrCorrectLetters[currentGuess[i]] -= 1;
+      }
+    }
+    for (let k in presentOrCorrectLetters) {
+      if (presentOrCorrectLetters[k] !== 0) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 export function isGameOver(guesses, secretWord) {

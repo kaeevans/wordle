@@ -3,8 +3,14 @@ import Alert from "./components/Alert";
 import Board from "./components/Board";
 import Keyboard from "./components/Keyboard";
 import React, { useEffect, useState } from "react";
-import { fetchSecretWord, isGameOver, isInWordList } from "./utils";
+import {
+  fetchSecretWord,
+  isGameOver,
+  isHardModeWord,
+  isInWordList,
+} from "./utils";
 import { MAX_NUM_GUESSES, WORD_LENGTH } from "./constants/constants";
+import Toggle from "./components/Toggle";
 
 function App() {
   const secretWord = useState(fetchSecretWord())[0];
@@ -13,6 +19,7 @@ function App() {
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const [alertText, setAlertText] = useState("");
   const [alertShouldFade, setAlertShouldFade] = useState(true);
+  const [isHardModeOn, setIsHardModeOn] = useState(true);
 
   const onKeyDown = (e) => {
     return onKeyboardInput(e.key);
@@ -22,7 +29,8 @@ function App() {
     if (isGameOver(guesses, secretWord)) {
       return;
     }
-    const isLetter = key.length === 1 && key.toLowerCase() !== key.toUpperCase();
+    const isLetter =
+      key.length === 1 && key.toLowerCase() !== key.toUpperCase();
     key = key.toLowerCase();
     if (isLetter) {
       onLetter(key);
@@ -63,6 +71,11 @@ function App() {
       setIsAlertVisible(true);
       return;
     }
+    if (isHardModeOn && !isHardModeWord(guesses, currentGuess, secretWord)) {
+      setAlertText("Doesn't contain correctly guessed letters");
+      setIsAlertVisible(true);
+      return;
+    }
     const isSecretWord = currentGuess === secretWord;
     const isGameLost = !isSecretWord && guesses.length + 1 === MAX_NUM_GUESSES;
     setGuesses([...guesses, currentGuess]);
@@ -93,9 +106,12 @@ function App() {
       <header className="App-header">
         <div className="title">Wordle</div>
       </header>
-      <Alert {...{ isAlertVisible, alertText, dismissAlert, alertShouldFade }} />
+      <Alert
+        {...{ isAlertVisible, alertText, dismissAlert, alertShouldFade }}
+      />
       <Board {...{ guesses, secretWord, currentGuess }} />
       <Keyboard {...{ guesses, secretWord, onCellClick: onKeyClick }} />
+      <Toggle {...{ isHardModeOn, setIsHardModeOn }} />
     </div>
   );
 }
